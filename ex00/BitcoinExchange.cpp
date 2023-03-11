@@ -1,26 +1,20 @@
 #include "BitcoinExchange.hpp"
+#include <ctime>
 #include <fstream>
-#include <ios>
 #include <iostream>
 #include <sstream>
-#include <stdexcept>
-#include <string>
-#include <utility>
 
-BitcoinExchange::BitcoinExchange(void) : _filename(""), _dbname("data.csv"){};
-BitcoinExchange::BitcoinExchange(BitcoinExchange const &copy)
-    : _filename(copy._filename), _dbname(copy._dbname){};
-BitcoinExchange::BitcoinExchange(std::string const filename,
-                                 std::string const dbname)
-    : _filename(filename), _dbname(dbname) {
-  if (!isValidDbname())
+BitcoinExchange::BitcoinExchange(void){};
+BitcoinExchange::BitcoinExchange(BitcoinExchange const &copy) : _db(copy._db){};
+BitcoinExchange::BitcoinExchange(std::string const dbname) {
+  if (!isValidDbname(dbname))
     throw std::invalid_argument("BitcoinExchange was given an invalid DB name");
-  loadFile(&BitcoinExchange::processDbEntry, _dbname, ",");
+  loadFile(&BitcoinExchange::processDbEntry, dbname, ",");
 };
 BitcoinExchange::~BitcoinExchange(void){};
 
 BitcoinExchange &BitcoinExchange::operator=(BitcoinExchange const &copy) {
-  _filename = copy._filename;
+  _db = copy._db;
   return *this;
 };
 
@@ -34,24 +28,53 @@ BitcoinExchange::end(void) const {
   return _db.cend();
 };
 
-bool BitcoinExchange::isValidDbname(void) const {
+void BitcoinExchange::processInputFile(std::string const filename) {
+  loadFile(&BitcoinExchange::processInputEntry, filename, " | ");
+};
+
+bool BitcoinExchange::isValidDbname(std::string const &dbname) const {
   std::string::size_type delimiter_position;
   std::string extension;
 
-  delimiter_position = _dbname.rfind(".");
+  delimiter_position = dbname.rfind(".");
   if (delimiter_position == std::string::npos)
     return false;
-  extension = _dbname.substr(delimiter_position);
+  extension = dbname.substr(delimiter_position);
   if (extension != ".csv")
     return false;
   return true;
 };
 
+bool BitcoinExchange::isValidDate(std::string const &date) const {
+  struct std::tm tmp;
+
+  if (!strptime(date.c_str(), "%Y-%m-%d", &tmp))
+    return false;
+  return true;
+};
+
 void BitcoinExchange::processDbEntry(entry_type const &entry) {
+  if (!isValidDate(entry.first))
+    throw std::invalid_argument("BitcoinExchange invalid date on DB entry " +
+                                entry.first);
   _db[entry.first] = entry.second;
 };
 
-void BitcoinExchange::processInputEntry(entry_type const &entry){};
+void BitcoinExchange::processInputEntry(entry_type const &entry) {
+  double multiply;
+
+  if (!isValidDate(entry.first))
+    throw std::invalid_argument("BitcoinExchange invalid date on input entry " +
+                                entry.first);
+  if (entry.second < 0 || entry.second > 1000)
+    throw std::invalid_argument(
+        "BitcoinExchange invalid value on input entry " + entry.first);
+  multiply = _db.lower_bound(entry.first)->second * entry.second;
+  if (_db.find(entry.first) != _db.end())
+    multiply = _db[entry.first] * entry.second;
+  std::cout << entry.first << " => " << entry.second << " = " << multiply
+            << std::endl;
+};
 
 void BitcoinExchange::loadFile(line_processor callback, std::string const &name,
                                std::string const &separator) {
@@ -83,7 +106,7 @@ BitcoinExchange::loadFileEntry(std::string const &line,
     throw std::invalid_argument("BitcoinExchange entry miss separator " + line);
 
   date = line.substr(0, index);
-  valueText = line.substr(index + 1);
+  valueText = line.substr(index + separator.length());
   stream = std::istringstream(valueText);
   stream >> std::noskipws >> value;
   if (stream.rdstate() ^ stream.eofbit || stream.rdstate() & stream.failbit)
