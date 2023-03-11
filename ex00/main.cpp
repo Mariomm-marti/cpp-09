@@ -9,16 +9,15 @@ int main(int argc, char **argv) {
     return 1;
   }
   try {
-    BitcoinExchange exchange(argv[1], argv[2] ? argv[2] : "data.csv");
+    BitcoinExchange exchange(argc == 3 ? argv[2] : "data.csv");
 
     if (__CPP09_DEBUG_)
       for (BitcoinExchange::db_type::const_iterator it = exchange.begin();
            it != exchange.end(); it++)
         std::cout << "{\"date\": \"" << it->first
                   << "\", \"value\": " << it->second << "}" << std::endl;
+    exchange.processInputFile(argv[1]);
   } catch (std::invalid_argument const &except) {
     std::cout << "invalid_argument: " << except.what() << std::endl;
-  } catch (std::exception const &except) {
-    std::cout << "exception: " << except.what() << std::endl;
   }
 }
