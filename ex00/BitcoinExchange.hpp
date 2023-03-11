@@ -1,6 +1,5 @@
 #ifndef CPP_09_EX00_BITCOIN_EXCHANGE_HPP_
 #define CPP_09_EX00_BITCOIN_EXCHANGE_HPP_
-#include <utility>
 #pragma once
 
 #ifndef __CPP09_DEBUG_
@@ -18,12 +17,11 @@ public:
 
 private:
   db_type _db;
-  std::string _filename;
-  std::string _dbname;
 
   BitcoinExchange(void);
 
-  bool isValidDbname(void) const;
+  bool isValidDbname(std::string const &dbname) const;
+  bool isValidDate(std::string const &date) const;
   void processDbEntry(entry_type const &entry);
   void processInputEntry(entry_type const &entry);
   void loadFile(line_processor callback, std::string const &name,
@@ -33,12 +31,14 @@ private:
 
 public:
   BitcoinExchange(BitcoinExchange const &copy);
-  BitcoinExchange(std::string const filename, std::string const dbname);
+  BitcoinExchange(std::string const dbname);
   ~BitcoinExchange(void);
 
   BitcoinExchange &operator=(BitcoinExchange const &copy);
   db_type::const_iterator const begin(void) const;
   db_type::const_iterator const end(void) const;
+
+  void processInputFile(std::string const filename);
 };
 
 #endif
