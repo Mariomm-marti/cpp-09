@@ -1,5 +1,6 @@
 #ifndef CPP_09_EX00_BITCOIN_EXCHANGE_HPP_
 #define CPP_09_EX00_BITCOIN_EXCHANGE_HPP_
+#include <utility>
 #pragma once
 
 #ifndef __CPP09_DEBUG_
@@ -12,6 +13,8 @@
 class BitcoinExchange {
 public:
   typedef std::map<std::string, double> db_type;
+  typedef std::pair<std::string, double> entry_type;
+  typedef void (BitcoinExchange::*line_processor)(entry_type const &entry);
 
 private:
   db_type _db;
@@ -21,9 +24,12 @@ private:
   BitcoinExchange(void);
 
   bool isValidDbname(void) const;
-  void loadDatabase(void);
-  void loadFileEntry(std::string const &line,
-                     std::string const &separator = ",");
+  void processDbEntry(entry_type const &entry);
+  void processInputEntry(entry_type const &entry);
+  void loadFile(line_processor callback, std::string const &name,
+                std::string const &separator = ",");
+  entry_type loadFileEntry(std::string const &line,
+                           std::string const &separator) const;
 
 public:
   BitcoinExchange(BitcoinExchange const &copy);
