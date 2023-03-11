@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
 BitcoinExchange::BitcoinExchange(void){};
 BitcoinExchange::BitcoinExchange(BitcoinExchange const &copy) : _db(copy._db){};
@@ -86,8 +87,12 @@ void BitcoinExchange::loadFile(line_processor callback, std::string const &name,
     throw std::invalid_argument("BitcoinExchange was given inexistent " + name);
   std::getline(file, line);
   for (; std::getline(file, line);) {
-    currentEntry = loadFileEntry(line, separator);
-    (this->*callback)(currentEntry);
+    try {
+      currentEntry = loadFileEntry(line, separator);
+      (this->*callback)(currentEntry);
+    } catch (std::invalid_argument const &e) {
+      std::cout << e.what() << line << std::endl;
+    }
   }
   file.close();
 };
@@ -103,13 +108,13 @@ BitcoinExchange::loadFileEntry(std::string const &line,
 
   index = line.find(separator);
   if (index == std::string::npos)
-    throw std::invalid_argument("BitcoinExchange entry miss separator " + line);
+    throw std::invalid_argument("BitcoinExchange entry miss separator ");
 
   date = line.substr(0, index);
   valueText = line.substr(index + separator.length());
   stream = std::istringstream(valueText);
   stream >> std::noskipws >> value;
   if (stream.rdstate() ^ stream.eofbit || stream.rdstate() & stream.failbit)
-    throw std::invalid_argument("BitcoinExchange invalid value " + line);
+    throw std::invalid_argument("BitcoinExchange invalid value ");
   return std::make_pair(date, value);
 };
