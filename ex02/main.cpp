@@ -16,50 +16,50 @@ int main(int argc, char **argv) {
   time_point chrono_begin;
   time_point chrono_end;
 
-  for (int i = 1; i < argc; i++)
-    try {
+  try {
+    for (int i = 1; i < argc; i++) {
+      if (std::stoi(*(argv + i)) < 0)
+        throw std::exception();
       vector.insert(std::stoi(*(argv + i)));
       list.insert(std::stoi(*(argv + i)));
       deque.insert(std::stoi(*(argv + i)));
-    } catch (std::exception const &ex) {
-      std::cerr << "Invalid argument " << *(argv + i) << ", ignoring..."
-                << std::endl;
     }
+  } catch (std::exception const &ex) {
+    std::cerr << "Error" << std::endl;
+    return 1;
+  }
 
+  std::cout << "Before: ";
   vector.stream_numbers(std::cout);
   std::cout << std::endl;
   chrono_begin = std::chrono::high_resolution_clock::now();
   vector.sort();
   chrono_end = std::chrono::high_resolution_clock::now();
+  std::cout << "After: ";
   vector.stream_numbers(std::cout);
   std::cout << std::endl;
-  std::cout << "Took (vector): "
+  std::cout << "Time to process a range of " << argc - 1
+            << " elements with std::vector : "
             << std::chrono::duration_cast<std::chrono::microseconds>(
                    chrono_end - chrono_begin)
                    .count()
             << std::endl;
 
-  list.stream_numbers(std::cout);
-  std::cout << std::endl;
   chrono_begin = std::chrono::high_resolution_clock::now();
   list.sort();
   chrono_end = std::chrono::high_resolution_clock::now();
-  list.stream_numbers(std::cout);
-  std::cout << std::endl;
-  std::cout << "Took (list): "
+  std::cout << "Time to process a range of " << argc - 1
+            << " elements with std::list: "
             << std::chrono::duration_cast<std::chrono::microseconds>(
                    chrono_end - chrono_begin)
                    .count()
             << std::endl;
 
-  deque.stream_numbers(std::cout);
-  std::cout << std::endl;
   chrono_begin = std::chrono::high_resolution_clock::now();
   deque.sort();
   chrono_end = std::chrono::high_resolution_clock::now();
-  deque.stream_numbers(std::cout);
-  std::cout << std::endl;
-  std::cout << "Took (deque): "
+  std::cout << "Time to process a range of " << argc - 1
+            << " elements with std::deque: "
             << std::chrono::duration_cast<std::chrono::microseconds>(
                    chrono_end - chrono_begin)
                    .count()

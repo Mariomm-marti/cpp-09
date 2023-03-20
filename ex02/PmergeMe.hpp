@@ -85,7 +85,7 @@ public:
   const_iterator begin(void) const { return _numbers.cbegin(); };
   const_iterator end(void) const { return _numbers.cend(); };
   void stream_numbers(std::ostream &stream,
-                      std::string const &separator = ", ") const {
+                      std::string const &separator = " ") const {
     for (const_iterator it = begin(); it != end(); it++)
       stream << *it << separator;
   };
