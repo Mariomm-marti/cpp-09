@@ -101,7 +101,6 @@ BitcoinExchange::entry_type
 BitcoinExchange::loadFileEntry(std::string const &line,
                                std::string const &separator) const {
   std::string::size_type index;
-  std::istringstream stream;
   std::string date;
   std::string valueText;
   double value;
@@ -112,7 +111,7 @@ BitcoinExchange::loadFileEntry(std::string const &line,
 
   date = line.substr(0, index);
   valueText = line.substr(index + separator.length());
-  stream = std::istringstream(valueText);
+  std::istringstream stream(valueText);
   stream >> std::noskipws >> value;
   if (stream.rdstate() ^ stream.eofbit || stream.rdstate() & stream.failbit)
     throw std::invalid_argument("BitcoinExchange invalid value ");

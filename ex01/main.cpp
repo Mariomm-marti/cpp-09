@@ -7,6 +7,7 @@ int main(int argc, char **argv) {
   for (int i = 1; i < argc; i++) {
     try {
       std::cout << rpn.calculate(argv[i]) << std::endl;
+      rpn.clear();
     } catch (std::invalid_argument const &e) {
       std::cout << "invalid_argument: " << e.what() << " on expression "
                 << argv[i] << std::endl;
